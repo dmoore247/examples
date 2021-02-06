@@ -1,1 +1,1 @@
-%md # CZI Imaging Pipeline
+# CZI Imaging Pipeline
