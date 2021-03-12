@@ -1,4 +1,15 @@
 # Databricks notebook source
+# MAGIC %md # Scaling Analytics
+# MAGIC - Review the data
+# MAGIC - SQL
+# MAGIC - Pandas
+# MAGIC - Koalas
+# MAGIC - PySpark
+# MAGIC - SparkR
+# MAGIC - SparklyR
+
+# COMMAND ----------
+
 # MAGIC %md ## Review the data
 
 # COMMAND ----------
@@ -29,7 +40,7 @@
 
 # COMMAND ----------
 
-# MAGIC %md ## Distributed Analytics using SQL
+# MAGIC %md ## SQL
 
 # COMMAND ----------
 
