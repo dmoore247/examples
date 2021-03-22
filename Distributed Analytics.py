@@ -97,6 +97,10 @@ pd.concat((pd.read_csv(f) for f in all_files), ignore_index=True).count()
 
 # COMMAND ----------
 
+
+
+# COMMAND ----------
+
 # MAGIC %md ## Koalas
 
 # COMMAND ----------
@@ -149,6 +153,15 @@ display(
 
 # COMMAND ----------
 
+# MAGIC %r
+# MAGIC df <- read.df("dbfs:/tmp/observations",
+# MAGIC        source = "csv", header = "true", inferSchema = "true", na.strings = "NA")
+# MAGIC 
+# MAGIC code_counts <- summarize(groupBy(df, df$code), count = n(df$code))
+# MAGIC head(arrange(code_counts, desc(code_counts$count)), num=10)
+
+# COMMAND ----------
+
 # MAGIC %md ## SparklyR
 
 # COMMAND ----------
@@ -187,9 +200,23 @@ display(
 
 # COMMAND ----------
 
+# MAGIC %r
+# MAGIC df <- spark_read_csv(
+# MAGIC   sc,
+# MAGIC   name = "observations",
+# MAGIC   path = "dbfs:/tmp/observations",
+# MAGIC   header = TRUE
+# MAGIC )
+# MAGIC group_by(df, CODE) %>% 
+# MAGIC   count() %>%
+# MAGIC   arrange(desc(n))
+
+# COMMAND ----------
+
 # MAGIC %md 
 # MAGIC # Thank you very much
 # MAGIC # どうもありがとうございました
 
 # COMMAND ----------
+
 
