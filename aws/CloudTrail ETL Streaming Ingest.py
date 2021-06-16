@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %md # Streaming ETL on CloudTrail Logs using Structured Streaming
+# MAGIC %md # Historical, Incremental or Continious ingest and processing of CloudTrail logs
 # MAGIC  
 # MAGIC 
 # MAGIC [AWS CloudTrail](https://aws.amazon.com/cloudtrail/) is a web service that records AWS API calls for your account and delivers audit logs to you as JSON files in a S3 bucket. If you do not have it configured, see AWS' documentation on how to do so. 
@@ -10,7 +10,7 @@
 # MAGIC 
 # MAGIC Author: Douglas Moore
 # MAGIC 
-# MAGIC Tags: CloudTrail, Autoloader, CloudFiles, JSON, Historical Load, Incremental Load, Continious, Streaming, Production, Widgets, Job, Ingest
+# MAGIC Tags: CloudTrail, Autoloader, cloudFiles, JSON, Historical Load, Incremental Load, Continious, Streaming, Production, Widgets, Job, Ingest
 
 # COMMAND ----------
 
@@ -27,7 +27,7 @@
 # COMMAND ----------
 
 # MAGIC %md ## Requires
-# MAGIC - DBR 8.2
+# MAGIC - DBR 8.3
 # MAGIC - Spark config:
 # MAGIC `spark.driver.maxResultSize 20GB`
 # MAGIC - Cluster config:
@@ -38,7 +38,7 @@
 # MAGIC     },
 # MAGIC     "node_type_id": "c5d.2xlarge",
 # MAGIC     "driver_node_type_id": "r4.4xlarge",
-# MAGIC     "spark_version": "8.2.x-scala2.12",
+# MAGIC     "spark_version": "8.3.x-scala2.12",
 # MAGIC     "spark_conf": {
 # MAGIC         "spark.driver.maxResultSize": "20GB"
 # MAGIC     },
@@ -53,11 +53,11 @@
 
 # DBTITLE 1,Process Input Parameters
 dbutils.widgets.removeAll()
-dbutils.widgets.text("input_path",defaultValue="s3a://dl-prod-audit/AWSLogs/749357711087/CloudTrail/*/2021/", label="01 CloudTrail Input")
-dbutils.widgets.text("output_path", defaultValue="s3://dsops-support-prod/databases/db_audit/cloudtrailraw/", label="02 Delta Table Path")
-dbutils.widgets.text("checkpoint_path", defaultValue="s3://dsops-support-prod/cloudtrail/", label="03 Checkpoint path")
+dbutils.widgets.text("input_path",defaultValue="s3a://oetrta/dmoore/flaws_cloudtrail_logs", label="01 CloudTrail Input")
+dbutils.widgets.text("output_path", defaultValue="s3a://oetrta/dmoore/databases/db_audit/cloudtrail_bronze/", label="02 Delta Table Path")
+dbutils.widgets.text("checkpoint_path", defaultValue="s3://oetrta/dmoore/chkpts/db_audit/cloudtrail_bronze/", label="03 Checkpoint path")
 dbutils.widgets.text("database_name", defaultValue="db_audit", label="04 Database")
-dbutils.widgets.text("table_name", defaultValue="cloudtrailraw", label="05 Table")
+dbutils.widgets.text("table_name", defaultValue="cloudtrail_bronze", label="05 Table")
 
 dbutils.widgets.combobox("load_type",defaultValue="incremental", choices=["historical","incremental","continuous"],label="06 Load type")
 #dbutils.widgets.combobox("mergeSchema",defaultValue="false", choices=["true","false"],label="07 Merge Schema")
@@ -76,21 +76,13 @@ table_name = dbutils.widgets.get("table_name")
 database_table_name = F"{database_name}.{table_name}"
 load_type = dbutils.widgets.get("load_type")
 
-#includeExistingFiles = dbutils.widgets.get("includeExistingFiles")
-#mode = dbutils.widgets.get("mode")
-# create_table = ("true" == dbutils.widgets.get("create_table"))
-
-#maxFilesPerTrigger = int(dbutils.widgets.get("maxFilesPerTrigger").replace(',',''))
-#maxBytesPerTrigger = (dbutils.widgets.get("maxBytesPerTrigger"))
-
-#mergeSchema = dbutils.widgets.get("mergeSchema")
-
 options = {
   "historical": {
     "mergeSchema": False,
     "maxFilesPerTrigger": 10000,
     "includeExistingFiles": True,
-    "mode": "overwrite",
+    "mode": "append",
+    "create_database": True,
     "create_table": True,
     "remove_checkpoint": True,
     "trigger": { "type": "once", "value":"True" },
@@ -100,6 +92,7 @@ options = {
     "maxFilesPerTrigger": 10000,
     "includeExistingFiles": False,
     "mode": "append",
+    "create_database": False,
     "create_table": False,
     "remove_checkpoint": False,
     "trigger": { "type": "once", "value":"True" }
@@ -109,6 +102,7 @@ options = {
     "maxFilesPerTrigger": 1000,
     "includeExistingFiles": False,
     "mode": "append",
+    "create_database": False,
     "create_table": False,
     "remove_checkpoint": False,
     "trigger": { "type": "processing", "value":"60 seconds" }
@@ -120,6 +114,7 @@ maxFilesPerTrigger = options[load_type]['maxFilesPerTrigger']
 includeExistingFiles = options[load_type]['includeExistingFiles']
 mode = options[load_type]['mode']
 remove_checkpoint = options[load_type]['remove_checkpoint']
+create_database = options[load_type]['create_database']
 create_table = options[load_type]['create_table']
 trigger = options[load_type]['trigger']
 
@@ -143,6 +138,7 @@ load_type       {load_type}
   mergeSchema:             {mergeSchema}
   mode:                    {mode}
   trigger:                 {trigger}
+  create_database          {create_database}
   create_table             {create_table}
 """)
 
@@ -150,11 +146,13 @@ load_type       {load_type}
 
 # DBTITLE 1,Optionally remove checkpoint
 if remove_checkpoint:
+  print(F"Removing checkpoint {checkpoint_path}")
   dbutils.fs.rm(dir=checkpoint_path, recurse=True)
 
 # COMMAND ----------
 
 if create_table:
+  print("Removing target table data {output_path}")
   dbutils.fs.rm(dir=output_path, recurse=True)
 
 # COMMAND ----------
@@ -243,7 +241,8 @@ schema = StructType([
 
 # COMMAND ----------
 
-# DBTITLE 1,Run incremental ingest of CloudTrail into Delta table
+# DBTITLE 1,Run Historical,Incremental or Continious ingest of CloudTrail into Delta table
+
 from pyspark.sql.functions import explode, unix_timestamp, input_file_name, col
 
 spark.conf.set("spark.sql.legacy.timeParserPolicy", "LEGACY")
@@ -252,7 +251,7 @@ spark.conf.set("spark.databricks.delta.properties.defaults.autoOptimize.autoComp
 spark.conf.set("spark.databricks.cloudFiles.asyncDirListing", True)
 
 # runs asynchronously
-query = (
+pre_query = (
   spark.readStream.format("cloudFiles")
     .option("cloudFiles.format", input_format)
     .option("cloudFiles.schemaLocation", output_path)
@@ -272,9 +271,20 @@ query = (
     .option("mergeSchema", mergeSchema)
     .option("checkpointLocation", checkpoint_path)
     .option("maxFilesPerTrigger", maxFilesPerTrigger)
-    .trigger(once=True)
-    .start(output_path)
+    .option("path", output_path)
 )
+
+# manage trigger types between historical, incremental and continious
+if load_type in ['historical', 'incremental']:
+  query = (pre_query
+    .trigger(once=True)
+    .start())
+elif load_type in ['continuous']:
+  query = (pre_query
+    .trigger(processingTime=trigger['value'])
+    .start())
+else:
+  print(F"Invalid load_type {load_type}")
 
 # COMMAND ----------
 
@@ -298,6 +308,9 @@ display(dbutils.fs.ls(output_path))
 
 # COMMAND ----------
 
+if create_database:
+  spark.sql(F"""CREATE DATABASE IF NOT EXISTS {database_name}""" )
+
 if create_table:
   spark.sql(F"DROP TABLE IF EXISTS {database_table_name}")
   spark.sql(F"""CREATE TABLE {database_table_name} USING DELTA LOCATION '{output_path}'""")
@@ -317,7 +330,7 @@ if create_table:
 
 # COMMAND ----------
 
-# MAGIC %md ## Analyze CloudTrail
+# MAGIC %md ## Validate CloudTrail Load
 
 # COMMAND ----------
 
@@ -326,6 +339,7 @@ if create_table:
 
 # COMMAND ----------
 
+# DBTITLE 1,Events per file
 # MAGIC %sql
 # MAGIC select 
 # MAGIC   count(1) rows, 
@@ -344,7 +358,7 @@ if create_table:
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT eventDate, count(1) count
+# MAGIC SELECT awsRegion, count(1) count, count(distinct input_file_name) files
 # MAGIC FROM ${c.database_table_name}
 # MAGIC group by 1
 # MAGIC order by 1
@@ -352,37 +366,43 @@ if create_table:
 # COMMAND ----------
 
 # MAGIC %md ### Use BinaryFile to count the files
+# MAGIC - To double check our loads, uses binaryFile type to gather file meta data
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC spark.conf.set("spark.databricks.delta.properties.defaults.autoOptimize.optimizeWrite", True)
-# MAGIC spark.conf.set("spark.databricks.delta.properties.defaults.autoOptimize.autoCompact", True)
-# MAGIC df = (
-# MAGIC   spark.read
-# MAGIC   .format("binaryFile")
-# MAGIC   .option("pathGlobFilter",      "*.json.gz")
-# MAGIC   .option("recursiveFileLookup", "true")
-# MAGIC   .load(input_path)
-# MAGIC   .drop('content')
-# MAGIC )
-# MAGIC from pyspark.sql.functions import split
-# MAGIC df.withColumn('tags',split(df.path,'/')).write.format("delta").mode('overwrite').save("dbfs:/tmp/cloud_trail_count")
+spark.conf.set("spark.databricks.delta.properties.defaults.autoOptimize.optimizeWrite", True)
+spark.conf.set("spark.databricks.delta.properties.defaults.autoOptimize.autoCompact", True)
+df = (
+  spark.read
+  .format("binaryFile")
+  .option("pathGlobFilter",      "*.json.gz")
+  .option("recursiveFileLookup", "true")
+  .load(input_path)
+  .drop('content')
+)
+from pyspark.sql.functions import split
+df.withColumn('tags',split(df.path,'/')).write.format("delta").mode('overwrite').saveAsTable(F"{database_table_name}_count")
+
+spark.conf.set("c.file_count_tbl",F"{database_table_name}_count")
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC SELECT count(1) 
-# MAGIC FROM delta.`dbfs:/tmp/cloud_trail_count`
+# MAGIC FROM ${c.file_count_tbl}
 
 # COMMAND ----------
 
 # MAGIC %sql 
 # MAGIC select tags[5], tags[6], count(1) files
-# MAGIC from delta.`dbfs:/tmp/cloud_trail_count` 
+# MAGIC from ${c.file_count_tbl}
 # MAGIC group by tags[5], tags[6]
 # MAGIC --where tags[5] != 'CloudTrail'
 # MAGIC --limit 10
+
+# COMMAND ----------
+
+# MAGIC %md ## The End
 
 # COMMAND ----------
 
