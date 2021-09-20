@@ -7,6 +7,12 @@
 # MAGIC This job uses AutoLoader to track what's been loaded: https://docs.databricks.com/spark/latest/structured-streaming/auto-loader.html
 # MAGIC simplifying the ETL logic considerably.
 # MAGIC 
+# MAGIC This job has 3 modes:
+# MAGIC 1. Historical Load - Load millions of files collected over time before this was installed into the Delta table.
+# MAGIC 2. Incremental Load - Run periodically (quarterly, monthly, weekly, daily, hourly, every 30 minutes...) to ingest the data into the delta table.
+# MAGIC 3. Continious load - Run continiously ingesting data into the delta table.
+# MAGIC 
+# MAGIC Test data found here: https://summitroute.com/blog/2020/10/09/public_dataset_of_cloudtrail_logs_from_flaws_cloud/
 # MAGIC 
 # MAGIC Author: Douglas Moore
 # MAGIC 
@@ -22,15 +28,18 @@
 # MAGIC |03. | Checkpoint Path        | < path to checkpoint folder (tracks which files have been processed) |
 # MAGIC |04. | Database               | Database name where table will be located |
 # MAGIC |05. | Table                  | Table name for Delta Lake table
-# MAGIC |06. | Load type              | Historical (one time load of all past data), Incremental (Hourly, Daily, weekly, quarterly runs), Continuous (always on)|
+# MAGIC |06. | Load type              | Historical (one time load of all past data), Incremental (hourly, daily, weekly, quarterly runs), Continuous (always on)|
 
 # COMMAND ----------
 
 # MAGIC %md ## Requires
-# MAGIC - DBR 8.3
-# MAGIC - Spark config:
+# MAGIC - DBR 8.3 +
+# MAGIC - Spark config: (Large number of files creates pressure on the driver)
 # MAGIC `spark.driver.maxResultSize 20GB`
 # MAGIC - Cluster config:
+# MAGIC   - Compute intenstive workers
+# MAGIC   - Memory intensive driver
+# MAGIC 
 # MAGIC ```
 # MAGIC     "autoscale": {
 # MAGIC         "min_workers": 2,
