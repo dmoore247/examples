@@ -14,7 +14,7 @@
 
 # COMMAND ----------
 
-# MAGIC %md ## Configuration Documentation
+# MAGIC %md ## Configuration
 # MAGIC | num | Input Field | Description |
 # MAGIC | --- | --- | --- |
 # MAGIC |01. | CloudTrail Input       | < path to log files. Glob patterns supported > |
@@ -23,6 +23,8 @@
 # MAGIC |04. | Database               | Database name where table will be located |
 # MAGIC |05. | Table                  | Table name for Delta Lake table
 # MAGIC |06. | Load type              | Historical (one time load of all past data), Incremental (Hourly, Daily, weekly, quarterly runs), Continuous (always on)|
+# MAGIC |07. | Use Notifications      | 'true' or 'false' use S3/SNS/SQS notifications |
+# MAGIC |08. | Region                 | Bucket region, needed if Use Notifications is 'true' |
 
 # COMMAND ----------
 
