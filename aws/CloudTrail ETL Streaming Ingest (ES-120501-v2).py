@@ -147,6 +147,10 @@ load_type       {load_type}
 
 # COMMAND ----------
 
+
+
+# COMMAND ----------
+
 # DBTITLE 1,Optionally remove checkpoint
 if remove_checkpoint:
   print(F"Removing checkpoint {checkpoint_path}")
@@ -361,7 +365,6 @@ if create_table:
 
 # COMMAND ----------
 
-# DBTITLE 1,File counts by region
 # MAGIC %sql
 # MAGIC SELECT awsRegion, count(1) count, count(distinct input_file_name) files
 # MAGIC FROM ${c.database_table_name}
@@ -371,8 +374,7 @@ if create_table:
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT /* new query, deleted old */
-# MAGIC      awsRegion, count(1) count
+# MAGIC SELECT awsRegion, count(1) count, count(distinct input_file_name) files
 # MAGIC FROM ${c.database_table_name}
 # MAGIC group by 1
 # MAGIC order by 1

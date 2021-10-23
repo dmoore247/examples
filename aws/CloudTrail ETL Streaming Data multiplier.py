@@ -31,22 +31,18 @@
 # MAGIC `spark.driver.maxResultSize 20GB`
 # MAGIC - Cluster config:
 # MAGIC ```
-# MAGIC     "autoscale": {
-# MAGIC         "min_workers": 2,
-# MAGIC         "max_workers": 30
-# MAGIC     },
-# MAGIC     "node_type_id": "c5d.2xlarge",
-# MAGIC     "driver_node_type_id": "r4.4xlarge",
+# MAGIC     "num_workers": 4,
 # MAGIC     "spark_version": "8.3.x-scala2.12",
 # MAGIC     "spark_conf": {
-# MAGIC         "spark.driver.maxResultSize": "20GB"
+# MAGIC         "spark.databricks.io.cache.maxMetaDataCache": "1g",
+# MAGIC         "spark.databricks.io.cache.maxDiskUsage": "50g",
+# MAGIC         "spark.databricks.io.cache.compression.enabled": "false",
+# MAGIC         "spark.driver.maxResultSize": "20GB",
+# MAGIC         "spark.databricks.io.cache.enabled": "true"
 # MAGIC     },
+# MAGIC     "node_type_id": "c5d.2xlarge",
+# MAGIC     "driver_node_type_id": "r5.4xlarge",
 # MAGIC     ```
-
-# COMMAND ----------
-
-# MAGIC %md ## Periodic job to ingest cloud trail into Delta Lake for analysis
-# MAGIC - Using Trigger.Once, this job will run and ingest all 'new' files
 
 # COMMAND ----------
 
@@ -76,10 +72,26 @@ reset           {reset}
 
 # COMMAND ----------
 
+dbutils.fs.mkdirs(input_path)
+
+# COMMAND ----------
+
+# MAGIC %md ## Monitor and inject test data
+
+# COMMAND ----------
+
+# DBTITLE 1,Streaming file list
+schema = spark.read.format("binaryFile").option("path",input_path).load().schema
+df = spark.readStream.format("binaryFile").option("path",input_path).schema(schema).load().drop('content')
+display(df)
+
+# COMMAND ----------
+
+# DBTITLE 1,Reset
 import time
 files = dbutils.fs.ls(raw_path)
 
-if reset:
+if True:
   dbutils.fs.rm(input_path, recurse=True)
   dbutils.fs.mkdirs(input_path)
   index = 1
@@ -87,13 +99,15 @@ if reset:
 # COMMAND ----------
 
 # DBTITLE 1,Data Generator code (runs in background thread)
+import uuid
+stop_threads = False
 def do_copies(index = 1):
   for i in range(n_copies):
     print(F"""Iteration {i}/{n_copies}""")
     for file_info in files:
       f = file_info.name
       src = F"""{raw_path}/{f}"""
-      dst = F"""{input_path}/{f}_{index}.json.gz"""
+      dst = F"""{input_path}/{f}_{index}_{str(uuid.uuid4())}.json.gz"""
       print(F"""from {src} to {dst}""")
       dbutils.fs.cp(src,dst)
 
@@ -101,7 +115,9 @@ def do_copies(index = 1):
       #time.sleep(wait_s)
       time.sleep(wait_s)
       index = index + 1
-
+      global stop_threads
+      if stop_threads:
+        return
 
 import threading
 
@@ -109,16 +125,30 @@ import threading
 background_thread = threading.Thread(target=do_copies, name="Data gen")
 background_thread.start()
 # continue doing stuff
-
-# COMMAND ----------
-
+print("\n running")
 background_thread.is_alive()
 
+import time
+time.sleep(10)
+
 # COMMAND ----------
 
-for i in range (100):
-  display(dbutils.fs.ls(input_path))
-  time.sleep(20)
+display(dbutils.fs.ls(input_path))
+
+# COMMAND ----------
+
+# DBTITLE 1,Stop notebook in-case of run-all
+dbutils.notebook.exit(0)
+
+# COMMAND ----------
+
+# DBTITLE 1,Stop background thread
+background_thread.is_alive()
+stop_threads = True
+
+# COMMAND ----------
+
+(dbutils.fs.rm(input_path, recurse=True))
 
 # COMMAND ----------
 

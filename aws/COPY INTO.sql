@@ -4,6 +4,7 @@
 -- COMMAND ----------
 
 CREATE DATABASE IF NOT EXISTS douglas_moore_bronze LOCATION 's3a://oetrta/dmoore/databases/bronze';
+USE douglas_moore_bronze;
 DESCRIBE DATABASE douglas_moore_bronze;
 
 -- COMMAND ----------
@@ -91,12 +92,12 @@ COPY INTO delta.`s3a://oetrta/dmoore/databases/bronze/devicev1`  FROM 'dbfs:/dat
 
 -- COMMAND ----------
 
-describe history iot;
+describe history douglas_moore_bronze.iot;
 
 -- COMMAND ----------
 
 -- MAGIC %md ### Verify
--- MAGIC - duplicates
+-- MAGIC - duplicates due to the forced load
 
 -- COMMAND ----------
 
@@ -121,9 +122,13 @@ SELECT * from douglas_moore_bronze.user;
 
 -- COMMAND ----------
 
+describe extended douglas_moore_bronze.user
+
+-- COMMAND ----------
+
 ALTER TABLE douglas_moore_bronze.user ADD COLUMNS (active int AFTER risk);
 
-DESCRIBE user;
+DESCRIBE douglas_moore_bronze.user;
 
 -- COMMAND ----------
 
@@ -164,12 +169,14 @@ SELECT * FROM douglas_moore_bronze.user ORDER BY userid ASC
 
 -- COMMAND ----------
 
+-- MAGIC %python 
+-- MAGIC dbutils.notebook.exit("stopping before cleanup")
+
+-- COMMAND ----------
+
 --
 -- reset
 --
-TRUNCATE TABLE iot;
-TRUNCATE TABLE user;
-TRUNCATE TABLE device;
 
 DROP TABLE IF EXISTS douglas_moore_bronze.iot;
 DROP TABLE IF EXISTS douglas_moore_bronze.user;
