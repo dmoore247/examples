@@ -3,6 +3,21 @@
 
 # COMMAND ----------
 
+pip freeze
+
+# COMMAND ----------
+
+import os
+#os.environ['TF_CPP_MIN_LOG_LEVEL']
+#os.unsetenv('TF_CPP_MIN_LOG_LEVEL')
+os.environ['TF_CPP_MIN_LOG_LEVEL']
+
+# COMMAND ----------
+
+# MAGIC %sh export TF_CPP_MIN_LOG_LEVEL=0
+
+# COMMAND ----------
+
 import jax.numpy as jnp
 from jax import jit
 
