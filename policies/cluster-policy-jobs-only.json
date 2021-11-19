@@ -1,0 +1,32 @@
+{
+  "cluster_source": {
+    "type": "fixed",
+    "value": "JOB"
+  },
+  "dbus_per_hour": {
+    "type": "range",
+    "maxValue": 100
+  },
+  "instance_pool_id": {
+    "type": "fixed",
+    "value": "1109-170548-hexed46-pool-7b1aoaaa",
+    "hidden": false
+  },
+  "driver_instance_pool_id": {
+    "type": "fixed",
+    "value": "1109-170548-hexed46-pool-7b1aoaaa",
+    "hidden": false
+  },
+  "num_workers": {
+    "type": "range",
+    "maxValue": 20
+  },
+  "spark_version": {
+    "type": "regex",
+    "pattern": "7\\.[0-9]+\\.x-scala.*"
+  },
+  "custom_tags.team": {
+    "type": "fixed",
+    "value": "product"
+  }
+}
