@@ -4,8 +4,7 @@
 # MAGIC 
 # MAGIC [AWS CloudTrail](https://aws.amazon.com/cloudtrail/) is a web service that records AWS API calls for your account and delivers audit logs to you as JSON files in a S3 bucket. If you do not have it configured, see AWS' documentation on how to do so. 
 # MAGIC 
-# MAGIC This job uses AutoLoader to track what's been loaded: https://docs.databricks.com/spark/latest/structured-streaming/auto-loader.html
-# MAGIC simplifying the ETL logic considerably.
+# MAGIC This notebook multiplies and generates new synthetic data for CloudTrail
 # MAGIC 
 # MAGIC 
 # MAGIC Author: Douglas Moore
@@ -119,6 +118,32 @@ background_thread.is_alive()
 for i in range (100):
   display(dbutils.fs.ls(input_path))
   time.sleep(20)
+
+# COMMAND ----------
+
+df = spark.read.format('binaryFile').load(input_path)
+schema = df.schema
+
+# COMMAND ----------
+
+df = spark.readStream.format('binaryFile').schema(schema).load(input_path).drop('content')
+df.createOrReplaceTempView('cloud_files_raw')
+
+# COMMAND ----------
+
+# MAGIC %sql select * from cloud_files_raw
+
+# COMMAND ----------
+
+df_output = spark.readStream.format('delta').table('db_audit.cloudtrail_bronze_3')
+df_output.createOrReplaceTempView('cloud_trail_stream')
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select timestamp, eventName, count(*) cnt 
+# MAGIC from cloud_trail_stream 
+# MAGIC group by 1,2
 
 # COMMAND ----------
 

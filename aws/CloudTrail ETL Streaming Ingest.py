@@ -286,7 +286,8 @@ pre_query = (
 # manage trigger types between historical, incremental and continious
 if load_type in ['historical', 'incremental']:
   query = (pre_query
-    .trigger(once=True)
+    #.trigger(once=True)
+    .trigger(availableNow=True) #for better micro-batching
     .start())
 elif load_type in ['continuous']:
   query = (pre_query
@@ -305,6 +306,13 @@ while query.isActive:
   current_time = time.strftime("%H:%M:%S", t)
   print(current_time, query.status, query.recentProgress, query.lastProgress)
   time.sleep(10)
+
+t = time.localtime()
+print(current_time, query.status, query.recentProgress, query.lastProgress)
+
+# COMMAND ----------
+
+# MAGIC %fs ls s3a://oetrta/dmoore/flaws_cloudtrail_landing/
 
 # COMMAND ----------
 
@@ -374,6 +382,14 @@ if create_table:
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC SELECT *
+# MAGIC FROM ${c.database_table_name}
+# MAGIC group by 1
+# MAGIC order by 1
+
+# COMMAND ----------
+
 # MAGIC %md ### Use BinaryFile to count the files
 # MAGIC - To double check our loads, uses binaryFile type to gather file meta data
 
@@ -399,15 +415,6 @@ spark.conf.set("c.file_count_tbl",F"{database_table_name}_count")
 # MAGIC %sql
 # MAGIC SELECT count(1) 
 # MAGIC FROM ${c.file_count_tbl}
-
-# COMMAND ----------
-
-# MAGIC %sql 
-# MAGIC select tags[5], tags[6], count(1) files
-# MAGIC from ${c.file_count_tbl}
-# MAGIC group by tags[5], tags[6]
-# MAGIC --where tags[5] != 'CloudTrail'
-# MAGIC --limit 10
 
 # COMMAND ----------
 
