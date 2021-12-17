@@ -298,14 +298,21 @@ import socket
 def tcp_ping(host, port=443):
   timeout_value = 3 #seconds
   socket.setdefaulttimeout(timeout_value)
-  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  # now connect to the web server on port 80 - the normal http port
-  s.connect((host,port))
-  msg = b'hello'
-  s.send(msg)
-  s.detach()
-  s.close()
-  return 'Success'
+  if port > 0:
+    try:
+      s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      # now connect to the web server on port 80 - the normal http port
+      s.connect((host,port))
+      msg = b'hello'
+      s.send(msg)
+      s.detach()
+      s.close()
+      return 'Success'
+    except BaseException as e:
+      print(F"Host: {host} incurs {e}")
+      return 'Failure'
+  else:
+    return 'N/A'
 
 def nslookup(host):
   try:
@@ -318,6 +325,12 @@ def nslookup(host):
     return 'Success'
   except BaseException as e:
     print(F"Host: {host} incurs {e}")
+    
+def probe(region):
+  print (F"Endpoint    \t\tnslookup | tcp_ping")
+  print (F"--------    \t\t-------- | --------")
+  for endpoint in endpoints[region]:
+    print( F"{endpoint[0]}\t\t {nslookup(endpoint[1])} | {tcp_ping(endpoint[1],endpoint[2])}")
 
 # COMMAND ----------
 
@@ -329,7 +342,8 @@ endpoints = {
     ('S3 global',     's3.amazonaws.com', 443),
     ('Regional S3',   's3.us-west-1.amazonaws.com', 443),
     ('Kinesis    ',   'kinesis.us-west-1.amazonaws.com', 443),
-    ('RDS        ',	  'mdzsbtnvk0rnce.c13weuwubexq.us-west-1.rds.amazonaws.com',	3306)
+    ('RDS        ',	  'mdzsbtnvk0rnce.c13weuwubexq.us-west-1.rds.amazonaws.com',	3306),
+    ('Control Plane', '44.234.192.32',	-1)
   ],
   'us-east-1':
   [
@@ -338,18 +352,11 @@ endpoints = {
     ('S3 global',     's3.amazonaws.com', 443),
     ('Regional S3',   's3.us-east-1.amazonaws.com', 443),
     ('Kinesis    ',   'kinesis.us-east-1.amazonaws.com', 443),
-    ('RDS        ',	  'mdb7sywh50xhpr.chkweekm4xjq.us-east-1.rds.amazonaws.com',	3306)
+    ('RDS        ',	  'mdb7sywh50xhpr.chkweekm4xjq.us-east-1.rds.amazonaws.com',	3306),
+    ('Control Plane', '3.237.73.224',	-1)
   ]
  }
 endpoints
-
-# COMMAND ----------
-
-def probe(region):
-  print (F"Endpoint    \t\tnslookup | tcp_ping")
-  print (F"--------    \t\t-------- | --------")
-  for endpoint in endpoints[region]:
-    print( F"{endpoint[0]}\t\t {nslookup(endpoint[1])} | {tcp_ping(endpoint[1],endpoint[2])}")
 
 # COMMAND ----------
 
