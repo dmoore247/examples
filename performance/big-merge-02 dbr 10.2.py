@@ -40,21 +40,25 @@ def make_random_dataframe(n_samples = 10_000, n_cols=10):
 
 # COMMAND ----------
 
-table_name = 'dm_merge'
-database_name = 'default'
+df = make_random_dataframe(n_samples = 9_000_000, n_cols = 180)
+
+# COMMAND ----------
+
+display(df)
+
+# COMMAND ----------
+
 email = dbutils.entry_point.getDbutils().notebook().getContext().userName().get()
-path = F"dbfs:/tmp/{email}/{database_name}.db/{table_name}"
+path = F"dbfs:/tmp/{email}/merge_001"
+dbutils.fs.rm(path, recurse=True)
+df.write.format('delta').mode('overwrite').option('mergeSchema','true').save(path)
 spark.conf.set('c.path', path)
 
-if spark._jsparkSession.catalog().tableExists(database_name, table_name):
-  print(F"{table_name} already exists")
-else:
-  df = make_random_dataframe(n_samples = 9_000_000, n_cols = 180)
+# COMMAND ----------
 
-  dbutils.fs.rm(path, recurse=True)
-  df.write.format('delta').mode('overwrite').option('mergeSchema','true').save(path)
-  spark.sql("DROP TABLE IF EXISTS dm_merge;")
-  spark.sql(F"CREATE EXTERNAL TABLE dm_merge USING DELTA LOCATION '{path}'")
+# MAGIC %sql
+# MAGIC DROP TABLE IF EXISTS dm_merge;
+# MAGIC CREATE EXTERNAL TABLE dm_merge USING DELTA LOCATION '${c.path}'
 
 # COMMAND ----------
 
@@ -62,7 +66,7 @@ else:
 
 # COMMAND ----------
 
-dfx = spark.read.table(F"{database_name}.{table_name}")
+dfx = spark.read.table('dm_merge')
 
 # COMMAND ----------
 
@@ -101,14 +105,6 @@ dfx = spark.read.table(F"{database_name}.{table_name}")
 # MAGIC ON target.id = source.id
 # MAGIC WHEN MATCHED THEN update set *
 # MAGIC WHEN NOT MATCHED THEN insert *
-
-# COMMAND ----------
-
-# MAGIC %sql set spark.databricks.clusterUsageTags.sparkVersion
-
-# COMMAND ----------
-
-# MAGIC %sql set
 
 # COMMAND ----------
 
