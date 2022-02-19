@@ -9,13 +9,6 @@
 
 # COMMAND ----------
 
-# DBTITLE 1,Setup databricks api credentials file for the target workspace
-import os
-os.environ["DATABRICKS_HOST"]="demo.cloud.databricks.com" # CHANGEME
-os.environ["DATABRICKS_TOKEN"]=dbutils.secrets.get('terraform','token') # set the secrets via databricks-cli
-
-# COMMAND ----------
-
 # MAGIC %md ## Install Terraform on Ubuntu node
 # MAGIC 
 # MAGIC Terraform Install Documents (https://learn.hashicorp.com/tutorials/terraform/install-cli)
@@ -31,6 +24,18 @@ os.environ["DATABRICKS_TOKEN"]=dbutils.secrets.get('terraform','token') # set th
 
 # COMMAND ----------
 
+# DBTITLE 1,Get Databricks credentials
+import os
+
+# set the secrets via databricks-cli
+# example: databricks --profile E2DEMO secrets put --scope terraform --key e2-demo-field-eng
+
+workspace = "e2-demo-field-eng"
+os.environ["DATABRICKS_HOST"]=F"{workspace}.cloud.databricks.com" # 
+os.environ["DATABRICKS_TOKEN"]=dbutils.secrets.get('terraform',F"{workspace}")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Define the Databricks provder and 'connection'
 # MAGIC 
@@ -38,7 +43,15 @@ os.environ["DATABRICKS_TOKEN"]=dbutils.secrets.get('terraform','token') # set th
 
 # COMMAND ----------
 
-# MAGIC %sh cat <<EOF >databricks.tf
+# MAGIC %sh 
+# MAGIC mkdir -p /tmp/terraform
+# MAGIC cd /tmp/terraform
+
+# COMMAND ----------
+
+# MAGIC %sh 
+# MAGIC cd /tmp/terraform
+# MAGIC cat <<EOF >databricks.tf
 # MAGIC terraform {
 # MAGIC   required_providers {
 # MAGIC     databricks = {
@@ -59,35 +72,47 @@ os.environ["DATABRICKS_TOKEN"]=dbutils.secrets.get('terraform','token') # set th
 
 # COMMAND ----------
 
-# MAGIC %sh terraform init
-
-# COMMAND ----------
-
-# MAGIC %sh ls -al
-
-# COMMAND ----------
-
-# MAGIC %sh find .terraform -print
+# MAGIC %sh 
+# MAGIC cd /tmp/terraform
+# MAGIC terraform init
 
 # COMMAND ----------
 
 # MAGIC %sh 
 # MAGIC # convienience link
+# MAGIC cd /tmp/terraform
 # MAGIC ln -s .terraform/providers/registry.terraform.io/databrickslabs/databricks/0.5.0/linux_amd64/terraform-provider-databricks_v0.5.0 terraform-provider-databricks
 
 # COMMAND ----------
 
 # MAGIC %md ## Export workspace
 # MAGIC Export $DATABRICKS_HOST workspace to *.tf files stored in local storage
+# MAGIC 
+# MAGIC Example:
+# MAGIC ```
+# MAGIC ./terraform-provider-databricks exporter -skip-interactive \
+# MAGIC     -services=groups,secrets,access,compute,users,jobs,storage \
+# MAGIC     -listing=jobs,compute \
+# MAGIC     -last-active-days=90 \
+# MAGIC     -debug
+# MAGIC     ```
 
 # COMMAND ----------
 
 # DBTITLE 1,Run export
-# MAGIC %sh nohup ./terraform-provider-databricks exporter -skip-interactive >tf.out &
+# MAGIC %sh 
+# MAGIC cd /tmp/terraform
+# MAGIC ./terraform-provider-databricks exporter -skip-interactive \
+# MAGIC     -services=compute,jobs,storage \
+# MAGIC     -listing=jobs,compute \
+# MAGIC     -last-active-days=90 \
+# MAGIC     -debug
 
 # COMMAND ----------
 
-# MAGIC %sh tail -f tf.out
+# MAGIC %sh 
+# MAGIC cd /tmp/terraform
+# MAGIC tail tf.out
 
 # COMMAND ----------
 
