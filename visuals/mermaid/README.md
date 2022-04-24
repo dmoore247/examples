@@ -10,10 +10,10 @@ If you are familiar with Markdown you should have no problem learning Mermaid's 
  
 ```mermaid
 flowchart TD; 
-A["fa:fa-twitter Twitter"] --> B; 
+A --> B; 
 B(fa:fa-database) --> C --> E; 
 B --> D --> E;  
-E --> A;
+E["fa:fa-twitter Twitter"] --> A;
 ```
 
 
@@ -43,4 +43,20 @@ gantt
     Parallel 3   :         des5, after des3, 1d
     Parallel 4   :         des6, after des4, 1d
 ```
-
+```mermaid
+erDiagram
+    CAR ||--o{ NAMED-DRIVER : allows
+    CAR {
+        string allowedDriver FK "The license of the allowed driver"
+        string registrationNumber
+        string make
+        string model
+    }
+    PERSON ||--o{ NAMED-DRIVER : is
+    PERSON {
+        string driversLicense PK "The license #"
+        string firstName
+        string lastName
+        int age
+    }
+```
