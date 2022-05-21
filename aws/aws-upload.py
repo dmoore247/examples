@@ -13,7 +13,7 @@ import logging
 
 
 """
-    Code to direct upload to S3 by generating signed URL using a cluster with a valide instance profile.
+    Code to direct upload to S3 by generating signed URL using a cluster with a valid instance profile.
 """
 
 API_EXECUTE = "/api/1.2/commands/execute"
