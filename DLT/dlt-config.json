@@ -1,0 +1,48 @@
+{
+    "id": "21648c73-5b01-4918-b87b-3aa3ae8af152",
+    "clusters": [
+        {
+            "label": "default",
+            "autoscale": {
+                "min_workers": 1,
+                "max_workers": 5,
+                "mode": "ENHANCED"
+            }
+        }
+    ],
+    "development": true,
+    "continuous": false,
+    "channel": "CURRENT",
+    "edition": "ADVANCED",
+    "photon": false,
+    "libraries": [
+        {
+            "notebook": {
+                "path": "/Users/douglas.moore@databricks.com/DLT/workday-ingest"
+            }
+        },
+        {
+            "notebook": {
+                "path": "/Users/douglas.moore@databricks.com/DLT/workday-dlt"
+            }
+        },
+        {
+            "notebook": {
+                "path": "/Users/douglas.moore@databricks.com/DLT/workday_employee_source"
+            }
+        },
+        {
+            "notebook": {
+                "path": "/Users/douglas.moore@databricks.com/DLT/hr-attr-gold"
+            }
+        },
+        {
+            "notebook": {
+                "path": "/Users/douglas.moore@databricks.com/DLT/douglas_quickstart.sql"
+            }
+        }
+    ],
+    "name": "Human Resource - Workday Ingestion",
+    "storage": "dbfs:/pipelines/21648c73-5b01-4918-b87b-3aa3ae8af152",
+    "target": "uc_demos_douglas_moore.hr_analytics"
+}
