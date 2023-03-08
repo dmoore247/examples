@@ -4,7 +4,7 @@
 # MAGIC - Exports entire environment my token has access to
 # MAGIC 
 # MAGIC Prerequsites:
-# MAGIC - Databricks CLI to set the secret '--scope terraform, --key token'
+# MAGIC - Databricks CLI to set the secret '--scope terraform, --key <workspace-name>'
 # MAGIC - Small (e.g. m4) single node compute
 
 # COMMAND ----------
@@ -24,13 +24,19 @@
 
 # COMMAND ----------
 
+# MAGIC %sh apt-get install tree -y
+
+# COMMAND ----------
+
 # DBTITLE 1,Get Databricks credentials
 import os
 
 # set the secrets via databricks-cli
-# example: databricks --profile E2DEMO secrets put --scope terraform --key e2-demo-field-eng
+# example: 
+#   databricks --profile E2DEMO secrets create-scope terraform
+#   databricks --profile E2DEMO secrets put --scope terraform --key e2-demo-field-eng
 
-workspace = "e2-demo-field-eng"
+workspace = "uc-feb"
 os.environ["DATABRICKS_HOST"]=F"{workspace}.cloud.databricks.com" # 
 os.environ["DATABRICKS_TOKEN"]=dbutils.secrets.get('terraform',F"{workspace}")
 
@@ -49,6 +55,7 @@ os.environ["DATABRICKS_TOKEN"]=dbutils.secrets.get('terraform',F"{workspace}")
 
 # COMMAND ----------
 
+# DBTITLE 1,Bootstrap Databricks Terraform provider
 # MAGIC %sh 
 # MAGIC cd /tmp/terraform
 # MAGIC cat <<EOF >databricks.tf
@@ -99,20 +106,38 @@ os.environ["DATABRICKS_TOKEN"]=dbutils.secrets.get('terraform',F"{workspace}")
 
 # COMMAND ----------
 
-# DBTITLE 1,Run export
-# MAGIC %sh 
+# MAGIC %sh
 # MAGIC cd /tmp/terraform
-# MAGIC ./terraform-provider-databricks exporter -skip-interactive \
-# MAGIC     -services=compute,jobs,storage \
-# MAGIC     -listing=jobs,compute \
-# MAGIC     -last-active-days=90 \
-# MAGIC     -debug
+# MAGIC ./terraform-provider-databricks exporter -help
 
 # COMMAND ----------
 
-# MAGIC %sh 
+# DBTITLE 1,Run export
+# MAGIC %sh
 # MAGIC cd /tmp/terraform
-# MAGIC tail tf.out
+# MAGIC ./terraform-provider-databricks exporter -skip-interactive
+
+# COMMAND ----------
+
+# MAGIC %sh
+# MAGIC cd /tmp/terraform
+# MAGIC tree .
+
+# COMMAND ----------
+
+# MAGIC %sh
+# MAGIC cd /tmp/terraform
+# MAGIC ./terraform-provider-databricks exporter -skip-interactive \
+# MAGIC -directory /tmp/terraform/uc-feb \
+# MAGIC -debug
+
+# COMMAND ----------
+
+# MAGIC %sh mkdir -p /tmp/terraform/uc-feb/
+
+# COMMAND ----------
+
+# MAGIC %sh tree /tmp/terraform
 
 # COMMAND ----------
 

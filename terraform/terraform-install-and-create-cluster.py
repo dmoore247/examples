@@ -41,7 +41,7 @@ os.environ["DATABRICKS_TOKEN"]=dbutils.secrets.get('terraform','token') # set th
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## All in one Terraform script for Databricks workspace
+# MAGIC ## All in one Terraform script for Databricks - create cluster
 # MAGIC 
 # MAGIC - Could be split into multiple .tf files
 
