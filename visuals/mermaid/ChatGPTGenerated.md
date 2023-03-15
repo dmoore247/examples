@@ -1,5 +1,5 @@
 
-# ChatGPT Generated Diagrams
+# ChatGPT Generated SQL Diagrams
 
 1. Generate the mermaid.js markdown compatible with Github represent this SQL Query: 
 
