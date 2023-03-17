@@ -11,7 +11,7 @@ from os import getenv
 os.environ["DATABRICKS_HOST"] = "e2-demo-field-eng.cloud.databricks.com"
 # os.environ["SQL_CONN"] = "/sql/protocolv1/o/1444828305810485/1023-043142-sakfd809"
 os.environ["SQL_CONN"] ="/sql/1.0/endpoints/e2132350482b3089"
-os.environ["DATABRICKS_TOKEN"] = "dapi0b04fb3dc014644f4102592c3e167779"
+os.environ["DATABRICKS_TOKEN"] = "x"
 
 
 # COMMAND ----------
