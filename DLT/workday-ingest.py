@@ -1,4 +1,9 @@
 # Databricks notebook source
+# MAGIC %md # Pull Workday defined reports into the Lakehouse bronze layer
+# MAGIC The methods below use Python's requests library to call the workday endpoint api, retrieve the JSON formatted results, parse and insert into Delta Lakeh.
+
+# COMMAND ----------
+
 import requests
 from requests.auth import HTTPBasicAuth
 from pyspark.sql import functions as F
@@ -18,7 +23,7 @@ def workday_source(connect_string = 'connection_workday'):
 
 # COMMAND ----------
 
-import dlt
+import dlt  # runs only under DLT engine
 
 @dlt.table(
   name="workday_employee_source",
