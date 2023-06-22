@@ -1,4 +1,5 @@
 
 .databricks
+.databrickscfg
 .pyc
 filehandlers/__pycache__/
