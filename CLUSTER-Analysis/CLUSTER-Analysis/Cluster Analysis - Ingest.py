@@ -7,7 +7,7 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install --quiet databricks-sdk
+# MAGIC %pip install --quiet databricks-sdk==0.1.12
 
 # COMMAND ----------
 
@@ -17,7 +17,6 @@ dbutils.library.restartPython()
 
 from pyspark.sql.functions import expr, lit
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.compute import ClusterInfo
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
