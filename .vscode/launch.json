@@ -1,0 +1,23 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "databricks",
+            "request": "launch",
+            "name": "Run on Databricks",
+            "program": "${file}",
+            "args": []
+        },
+        {
+            "type": "databricks",
+            "request": "launch",
+            "name": "PyTest on Databricks",
+            "program": "${workspaceFolder}/pytest_databricks.py",
+            "args": [".", "--tb=auto","-v", "--durations=10"],
+            "env": {}   
+        }
+    ]
+}
