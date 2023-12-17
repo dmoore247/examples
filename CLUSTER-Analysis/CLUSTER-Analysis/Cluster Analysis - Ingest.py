@@ -7,7 +7,7 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install --quiet databricks-sdk==0.1.12
+# MAGIC %pip install --quiet databricks-sdk==0.9.0
 
 # COMMAND ----------
 
@@ -52,8 +52,20 @@ host
 
 # COMMAND ----------
 
++ import os
++ try:
++     os.remove(".databrickscfg")
++ except Exception as e:
++     print(e)
+
+# COMMAND ----------
+
 clusters = client.clusters.list()
 print(f"host: {host}, \nclusters: {len(clusters)}")
+
+# COMMAND ----------
+
+
 
 # COMMAND ----------
 
