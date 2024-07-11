@@ -1,9 +1,64 @@
 # Databricks notebook source
-# MAGIC %conda install -c plotly plotly dash databricks_dash
+# MAGIC %pip install databricks_dash
 
 # COMMAND ----------
 
-# MAGIC %pip install databricks_dash
+# MAGIC %pip install plotly
+
+# COMMAND ----------
+
+import plotly.express as px
+
+# Carregar dados de exemplo
+df = px.data.tips()
+
+# Criar o gráfico de dispersão
+fig = px.scatter(df, x="total_bill", y="tip", color="size", title="Tips")
+
+# Exibir o gráfico
+fig.show()
+
+# COMMAND ----------
+
+# MAGIC %pip install verde
+
+# COMMAND ----------
+
+dbutils.library.restartPython()
+
+# COMMAND ----------
+
+import verde as vd
+import numpy as np
+
+# Criar uma grade regular de pontos
+lons, lats = np.meshgrid(np.linspace(-180, 180, 100), np.linspace(-90, 90, 100))
+
+# Gerar valores de exemplo para os pontos
+values = np.sin(np.radians(lats)) * np.cos(np.radians(lons))
+
+# Criar um objeto verde.Gridder para realizar a interpolação
+gridder = vd.ScipyGridder(method="cubic")
+
+# Realizar a interpolação
+grid = gridder.fit((lons.flatten(), lats.flatten()), values.flatten())
+
+# Obter os valores interpolados em uma nova grade
+interp_lons, interp_lats = np.meshgrid(np.linspace(-180, 180, 200), np.linspace(-90, 90, 200))
+interp_values = grid.predict((interp_lons.flatten(), interp_lats.flatten()))
+
+# Plotar os resultados
+import matplotlib.pyplot as plt
+plt.contourf(interp_lons, interp_lats, interp_values.reshape(interp_lons.shape))
+plt.colorbar(label="Valor")
+plt.xlabel("Longitude")
+plt.ylabel("Latitude")
+plt.title("Interpolação Espacial")
+plt.show()
+
+# COMMAND ----------
+
+!pip install --upgrade verde
 
 # COMMAND ----------
 

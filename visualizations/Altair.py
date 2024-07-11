@@ -17,7 +17,8 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install altair altair_saver vega_datasets selenium webdriver-manager
+# MAGIC %pip install --quiet altair altair_saver vega_datasets selenium webdriver-manager
+# MAGIC dbutils.library.restartPython()
 
 # COMMAND ----------
 
@@ -84,25 +85,17 @@ displayHTML(chart.to_html())
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Host large data sets and serve them up via FileStore for Altair
-# MAGIC https://docs.databricks.com/data/filestore.html
-# MAGIC
-# MAGIC DBFS has a `dbfs:/FileStore` path which is accessible to the browser of the logged in user of Databricks. This is a place to store images, html, generated files for download.
-# MAGIC This next section will download a data file and display the locally hosted file via Altair
-# MAGIC
+# MAGIC ## Host large data sets and serve them up via Unity Catalog Volumes for Altair
+# MAGIC https://docs.databricks.com/en/connect/unity-catalog/volumes.html
 
 # COMMAND ----------
 
-# DBTITLE 1,Download zipcodes.csv
-# MAGIC %sh 
-# MAGIC wget https://vega.github.io/vega-datasets/data/zipcodes.csv
-# MAGIC mkdir -p /dbfs/FileStore/dmoore/
-# MAGIC cp zipcodes.csv /dbfs/FileStore/dmoore/zipcodes.csv
-# MAGIC rm zipcodes.csv
+# MAGIC %sh
+# MAGIC wget https://vega.github.io/vega-datasets/data/zipcodes.csv -O /Volumes/douglas_moore/demo/visuals/zipcodes.csv
 
 # COMMAND ----------
 
-displayHTML("""<a href="files/dmoore/zipcodes.csv">Verify Zipcodes.csv download</a>""")
+displayHTML("""<a href="/ajax-api/2.0/fs/files/Volumes/douglas_moore/demo/visuals/zipcodes.csv">Verify Zipcodes.csv download</a>""")
 
 # COMMAND ----------
 
@@ -110,7 +103,7 @@ displayHTML("""<a href="files/dmoore/zipcodes.csv">Verify Zipcodes.csv download<
 import altair as alt
 
 # Since the data is more than 5,000 rows we'll import it from a URL
-source = 'files/dmoore/zipcodes.csv'
+source = '/Volumes/douglas_moore/demo/visuals/zipcodes.csv'
 
 chart = alt.Chart(source).transform_calculate(
     "leading digit", alt.expr.substring(alt.datum.zip_code, 0, 1)
@@ -141,7 +134,7 @@ displayHTML(chart.to_html())
 # DBTITLE 1,Doesn't work either by saving to chart.html
 target = "/dbfs/FileStore/dmoore/chart.html"
 chart.save(target)
-displayHTML('<a href="https://demo.cloud.databricks.com/files/dmoore/chart.html">chart</a>')
+displayHTML('<a href="https://e2-demo-field-eng.cloud.databricks.com/?o=1444828305810485/files/dmoore/chart.html">chart</a>')
 
 # COMMAND ----------
 

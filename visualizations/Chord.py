@@ -11,6 +11,10 @@
 
 # COMMAND ----------
 
+# MAGIC %pip install --quiet holoviews
+
+# COMMAND ----------
+
 import pandas as pd
 import holoviews as hv
 from holoviews import opts, dim
