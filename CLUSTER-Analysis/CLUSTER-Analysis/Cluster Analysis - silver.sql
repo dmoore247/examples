@@ -51,6 +51,7 @@ FROM (
   FROM bronze_cluster_events
 )
 WHERE rank = 1
+AND type IS NOT NULL
 
 -- COMMAND ----------
 

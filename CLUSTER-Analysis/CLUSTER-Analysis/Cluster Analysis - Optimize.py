@@ -3,12 +3,11 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC dbutils.widgets.text("schema_name", defaultValue="main.douglas_moore", label="Target Schema")
-# MAGIC schema_name = dbutils.widgets.get("schema_name")
-# MAGIC spark.conf.set('c.schema_name',schema_name)
-# MAGIC
-# MAGIC schema_name, spark.conf.get('c.schema_name')
+dbutils.widgets.text("schema_name", defaultValue="main.douglas_moore", label="Target Schema")
+schema_name = dbutils.widgets.get("schema_name")
+spark.conf.set('c.schema_name',schema_name)
+
+schema_name, spark.conf.get('c.schema_name')
 
 # COMMAND ----------
 

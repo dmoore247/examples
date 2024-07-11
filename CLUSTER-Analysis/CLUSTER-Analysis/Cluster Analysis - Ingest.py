@@ -7,7 +7,7 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install --quiet databricks-sdk
+# MAGIC %pip install --quiet databricks-sdk==0.9.0
 
 # COMMAND ----------
 
@@ -17,27 +17,25 @@ dbutils.library.restartPython()
 
 from pyspark.sql.functions import expr, lit
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.compute import ClusterInfo
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC #dbutils.widgets.removeAll()
-# MAGIC dbutils.widgets.text("profile", defaultValue="E2DEMO", label="Databricks Environment Profile")
-# MAGIC dbutils.widgets.text("scope", defaultValue="tokens", label="Secret Scope")
-# MAGIC dbutils.widgets.text("schema_name", defaultValue="main.douglas_moore", label="Target Schema")
-# MAGIC
-# MAGIC profile = dbutils.widgets.get("profile")
-# MAGIC scope = dbutils.widgets.get("scope")
-# MAGIC schema_name = dbutils.widgets.get("schema_name")
-# MAGIC spark.conf.set('c.schema_name',schema_name)
-# MAGIC
-# MAGIC # Setup databricks connection config file. Pull from the secrets store
-# MAGIC open(".databrickscfg","w").write(dbutils.secrets.get(scope=scope,key='databrickscfg'))
-# MAGIC
-# MAGIC profile, scope, schema_name, spark.conf.get('c.schema_name')
+#dbutils.widgets.removeAll()
+dbutils.widgets.text("profile", defaultValue="E2DEMO", label="Databricks Environment Profile")
+dbutils.widgets.text("scope", defaultValue="tokens", label="Secret Scope")
+dbutils.widgets.text("schema_name", defaultValue="main.douglas_moore", label="Target Schema")
+
+profile = dbutils.widgets.get("profile")
+scope = dbutils.widgets.get("scope")
+schema_name = dbutils.widgets.get("schema_name")
+spark.conf.set('c.schema_name',schema_name)
+
+# Setup databricks connection config file. Pull from the secrets store
+open(".databrickscfg","w").write(dbutils.secrets.get(scope=scope,key='databrickscfg'))
+
+profile, scope, schema_name, spark.conf.get('c.schema_name')
 
 # COMMAND ----------
 
@@ -55,6 +53,14 @@ host
 
 clusters = client.clusters.list()
 print(f"host: {host}, \nclusters: {len(clusters)}")
+
+# COMMAND ----------
+
+import os
+try:
+    os.remove(".databrickscfg")
+except Exception as e:
+    print(e)
 
 # COMMAND ----------
 
