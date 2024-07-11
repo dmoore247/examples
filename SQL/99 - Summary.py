@@ -18,7 +18,3 @@
 # MAGIC ### Where to next?
 # MAGIC - Apply this measurement framework to the Project Snowmelt and Snowflake transcompilation
 # MAGIC - Apply this measurement framework to profilers (transpile and then evaluate complexity)
-
-# COMMAND ----------
-
-

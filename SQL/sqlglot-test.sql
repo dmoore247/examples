@@ -217,18 +217,16 @@
 
 -- COMMAND ----------
 
--- MAGIC %sql
--- MAGIC select * 
--- MAGIC from douglas_moore.sqlglot.project1
--- MAGIC order by insert_dt desc
+select * 
+from douglas_moore.sqlglot.project1
+order by insert_dt desc
 
 -- COMMAND ----------
 
--- MAGIC %sql
--- MAGIC select count(1) cnt, file_path, isnotnull(plan)
--- MAGIC from douglas_moore.sqlglot.project1
--- MAGIC group by 2,3
--- MAGIC order by 1 desc
+select count(1) cnt, file_path, isnotnull(plan)
+from douglas_moore.sqlglot.project1
+group by 2,3
+order by 1 desc
 
 -- COMMAND ----------
 
@@ -244,9 +242,8 @@ where strategy = 'File sqlglot issue'
 
 -- COMMAND ----------
 
--- MAGIC %sql
--- MAGIC select * from douglas_moore.sqlglot.project1
--- MAGIC where statement_type = 'create'
+select * from douglas_moore.sqlglot.project1
+where statement_type = 'create'
 
 -- COMMAND ----------
 

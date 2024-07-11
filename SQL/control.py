@@ -6,7 +6,7 @@ import os
 import glob
 import re
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARN)
 
 do_validate = False
 do_spark = False
@@ -157,4 +157,4 @@ def run_all(path:str, table_name:str):
 if __name__ == "__main__":
     logging.info("Running")
     do_validate = False
-    run_all("resources/*.sql", "douglas_moore.sqlglot.mckesson")
+    run_all("resources/*.sql", "douglas_moore.sqlglot.project1")

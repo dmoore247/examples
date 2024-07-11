@@ -62,23 +62,6 @@
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- summary of parse and transpilation
-# MAGIC SELECT count(1) count, 
-# MAGIC case 
-# MAGIC   WHEN error_class is null THEN 'good' 
-# MAGIC   WHEN strategy = 'ignore' THEN 'good'
-# MAGIC   WHEN error_class = 'TABLE_OR_VIEW_NOT_FOUND' THEN 'probably ok'
-# MAGIC   WHEN error_class = 'ParseException' THEN 'sqlglot parse issue'
-# MAGIC   WHEN error_class = 'PARSE_SYNTAX_ERROR' THEN 'sqlglot optimize for Databricks'
-# MAGIC   WHEN error_class = 'UNRESOLVED_ROUTINE' THEN 'risk'
-# MAGIC   ELSE 'unknown' END status
-# MAGIC FROM douglas_moore.sqlglot.project1
-# MAGIC group by 2
-# MAGIC order by 1 desc
-
-# COMMAND ----------
-
-# MAGIC %sql
 # MAGIC WITH parse_classes AS (
 # MAGIC SELECT 
 # MAGIC   count(1) cnt, 
@@ -105,10 +88,6 @@
 # MAGIC select status, cnt, pct
 # MAGIC FROM cte
 # MAGIC order by status
-
-# COMMAND ----------
-
-1.0 - (35-17)/(110+8+35+1)
 
 # COMMAND ----------
 
