@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Privacy Enhancement</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light grey background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Full viewport height */
+            margin: 0;
+        }
+        /* Custom switch styling */
+        .toggle-switch-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem; /* Space between switches */
+            background-color: #ffffff; /* White background for each switch row */
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem; /* Rounded corners */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Subtle shadow */
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .toggle-switch-container:hover {
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+
+        .toggle-switch-container:last-child {
+            margin-bottom: 0; /* No margin below the last switch */
+        }
+
+        .toggle-switch-label {
+            margin-right: 1rem;
+            font-size: 1.125rem; /* Larger font size for labels */
+            font-weight: 500;
+            color: #333;
+            flex-grow: 1; /* Allow label to take available space */
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 3.5rem; /* Wider switch */
+            height: 2rem; /* Taller switch */
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 2rem; /* Fully rounded */
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1.5rem; /* Slightly smaller circle */
+            width: 1.5rem;
+            left: 0.25rem; /* Spacing */
+            bottom: 0.25rem;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Shadow for the thumb */
+        }
+
+        input:checked + .slider {
+            background-color: #2563eb; /* Blue for active switch */
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2563eb;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(1.5rem); /* Move thumb to the right */
+        }
+
+        /* Style for disabled switches */
+        .toggle-switch input:disabled + .slider {
+            background-color: #e0e0e0; /* Lighter grey for disabled state */
+            cursor: not-allowed;
+        }
+
+        .toggle-switch input:disabled + .slider:before {
+            background-color: #f0f0f0; /* Lighter thumb for disabled state */
+            cursor: not-allowed;
+        }
+
+        .toggle-switch-container.disabled .toggle-switch-label {
+            color: #999; /* Faded text for disabled labels */
+        }
+    </style>
+</head>
+<body>
+    <div class="p-8 bg-white rounded-xl shadow-lg w-full max-w-md md:max-w-lg lg:max-w-xl flex flex-col">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">PHI Privacy Enhancement</h1>
+
+        <!-- Switch One: Report on PHI found in the image pixels -->
+        <div class="toggle-switch-container">
+            <span class="toggle-switch-label">Report on PHI found in the image pixels</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="switch1">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- Switch Two: Privacy Enhance the Image Pixels -->
+        <div class="toggle-switch-container">
+            <span class="toggle-switch-label">Privacy Enhance the Image Pixels</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="switch2">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- Switch Three: Highlight PHI -->
+        <div class="toggle-switch-container" id="switch3-container">
+            <span class="toggle-switch-label ml-8">Highlight PHI</span> <!-- Added ml-8 for indentation -->
+            <label class="toggle-switch">
+                <input type="checkbox" id="switch3" disabled>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- Switch Four: Redact PHI -->
+        <div class="toggle-switch-container" id="switch4-container">
+            <span class="toggle-switch-label ml-8">Redact PHI</span> <!-- Added ml-8 for indentation -->
+            <label class="toggle-switch">
+                <input type="checkbox" id="switch4" disabled>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- Run Button -->
+        <div class="mt-8 flex justify-end">
+            <button id="runButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out">
+                Run
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const switch1 = document.getElementById('switch1');
+            const switch2 = document.getElementById('switch2');
+            const switch3 = document.getElementById('switch3');
+            const switch4 = document.getElementById('switch4');
+            const runButton = document.getElementById('runButton'); // Get reference to the run button
+
+            const switch3Container = document.getElementById('switch3-container');
+            const switch4Container = document.getElementById('switch4-container');
+
+            // Function to update the disabled state and styling of switches 3 and 4
+            function updateDependentSwitchesState() {
+                const isSwitch2Checked = switch2.checked;
+
+                // Enable/Disable Switch 3
+                switch3.disabled = !isSwitch2Checked;
+                if (!isSwitch2Checked) {
+                    switch3.checked = false; // Uncheck if disabled
+                    switch3Container.classList.add('disabled');
+                } else {
+                    switch3Container.classList.remove('disabled');
+                }
+
+                // Enable/Disable Switch 4
+                switch4.disabled = !isSwitch2Checked;
+                if (!isSwitch2Checked) {
+                    switch4.checked = false; // Uncheck if disabled
+                    switch4Container.classList.add('disabled');
+                } else {
+                    switch4Container.classList.remove('disabled');
+                }
+            }
+
+            // Initial state update when the page loads
+            updateDependentSwitchesState();
+
+            // Event listener for Switch 1
+            switch1.addEventListener('change', (event) => {
+                console.log('Report on PHI found in the image pixels switch is:', event.target.checked ? 'ON' : 'OFF');
+                // Add your specific logic here for Switch 1
+            });
+
+            // Event listener for Switch 2
+            switch2.addEventListener('change', () => {
+                console.log('Privacy Enhance the Image Pixels switch is:', switch2.checked ? 'ON' : 'OFF');
+                updateDependentSwitchesState();
+            });
+
+            // Event listener for Switch 3 (Highlight PHI)
+            switch3.addEventListener('change', () => {
+                console.log('Highlight PHI switch is:', switch3.checked ? 'ON' : 'OFF');
+                if (switch3.checked) {
+                    switch4.checked = false; // Deactivate Switch 4 if Switch 3 is activated
+                    console.log('Redact PHI switch is automatically set to OFF.');
+                }
+                // Add your specific logic here for Switch 3
+            });
+
+            // Event listener for Switch 4 (Redact PHI)
+            switch4.addEventListener('change', () => {
+                console.log('Redact PHI switch is:', switch4.checked ? 'ON' : 'OFF');
+                if (switch4.checked) {
+                    switch3.checked = false; // Deactivate Switch 3 if Switch 4 is activated
+                    console.log('Highlight PHI switch is automatically set to OFF.');
+                }
+                // Add your specific logic here for Switch 4
+            });
+
+            // Event listener for Run Button
+            runButton.addEventListener('click', () => {
+                const switch1State = switch1.checked;
+                const switch2State = switch2.checked;
+                const switch3State = switch3.checked;
+                const switch4State = switch4.checked;
+
+                console.log('--- Run Button Clicked ---');
+                console.log('Report on PHI found in the image pixels:', switch1State);
+                console.log('Privacy Enhance the Image Pixels:', switch2State);
+                console.log('Highlight PHI:', switch3State);
+                console.log('Redact PHI:', switch4State);
+                console.log('--------------------------');
+
+                // You can add your core logic here based on the states of the switches.
+                // For example, trigger image processing or report generation.
+            });
+        });
+    </script>
+</body>
+</html>
